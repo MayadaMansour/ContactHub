@@ -3,6 +3,7 @@ var updateBtn = document.getElementById("updateBtnForm");
 var cancleBtn = document.getElementById("cancleBtn");
 var openBtn = document.getElementById("openForm");
 var avatarBtn = document.getElementById("avatar");
+var xClose = document.querySelector(".btn-close");
 
 var imageInput = document.getElementById("imageInput");
 var avatarPreview = document.getElementById("avatarPreview");
@@ -31,10 +32,12 @@ if (localStorage.getItem("all") != null) {
   displayFavorites();
   displayEmergency();
 }
+
 saveBtn.addEventListener("click", addContact);
 cancleBtn.addEventListener("click", closeModal);
 updateBtn.addEventListener("click", updateContact);
 openBtn.addEventListener("click", showForm);
+xClose.addEventListener("click", closeModal);
 
 fName.addEventListener("input", varificationName);
 phone.addEventListener("input", varificationPhone);
@@ -59,6 +62,8 @@ imageInput.addEventListener("change", function () {
   };
   reader.readAsDataURL(file);
 });
+
+//Contacts
 function getAvatar(contact) {
   if (contact.image) {
     return `
@@ -73,8 +78,6 @@ function getAvatar(contact) {
       .toUpperCase();
   }
 }
-
-//Contacts
 function addContact() {
   if (varificationName() && varificationPhone() && varificationEmail()) {
     var contact = {
@@ -92,11 +95,17 @@ function addContact() {
     contacts.push(contact);
     localStorage.setItem("all", JSON.stringify(contacts));
     displayContact();
+    displayFavorites();
+    displayEmergency();
     clearContact();
     closeModal();
+
+    showSuccessDialog(
+      "Saved Successfully",
+      "Contact has been added successfully"
+    );
   }
 }
-
 function displayContact() {
   var cartona = "";
   for (var i = 0; i < contacts.length; i++) {
@@ -171,7 +180,7 @@ function displayContact() {
               <i class="fa-regular fa-pen-to-square"
                  onclick="preUpdateContact(${i})"></i>
               <i class="fa-regular fa-trash-can"
-                 onclick="deleteContact(${i})"></i>
+                 onclick="openDeleteDialog(${i})"></i>
             </div>
           </div>
 
@@ -208,9 +217,8 @@ function deleteContact(index) {
 }
 function preUpdateContact(index) {
   currentIndex = index;
-  var modalEl = document.getElementById("addContactModal");
-  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-  modal.show();
+  document.getElementById("addContactModal").classList.remove("d-none");
+  document.body.style.overflow = "hidden";
   fName.value = contacts[index].fName;
   phone.value = contacts[index].phone;
   email.value = contacts[index].email;
@@ -219,9 +227,17 @@ function preUpdateContact(index) {
   notes.value = contacts[index].notes;
   favorite.checked = contacts[index].favorite;
   emergency.checked = contacts[index].emergency;
+  selectedImage = contacts[index].image || "";
+  if (selectedImage) {
+    avatarPreview.innerHTML = `
+      <img src="${selectedImage}"
+           class="w-100 h-100 rounded-circle object-fit-cover" />
+    `;
+  }
   saveBtn.classList.add("d-none");
   updateBtn.classList.remove("d-none");
 }
+
 function updateContact() {
   if (varificationName() && varificationPhone() && varificationEmail()) {
     var contact = {
@@ -239,13 +255,14 @@ function updateContact() {
     contacts.splice(currentIndex, 1, contact);
     localStorage.setItem("all", JSON.stringify(contacts));
     displayContact();
+    displayFavorites();
+    displayEmergency();
     clearContact();
     updateBtn.classList.add("d-none");
     saveBtn.classList.remove("d-none");
     closeModal();
   }
 }
-
 function searchContact(term) {
   term = term.trim().toLowerCase();
   if (term === "") {
@@ -325,7 +342,7 @@ function searchContact(term) {
               <i class="fa-regular fa-pen-to-square"
                  onclick="preUpdateContact(${i})"></i>
               <i class="fa-regular fa-trash-can"
-                 onclick="deleteContact(${i})"></i>
+                 onclick="openDeleteDialog(${i})"></i>
             </div>
           </div>
 
@@ -340,18 +357,15 @@ function searchContact(term) {
 
 //Form
 function showForm() {
-  var modalEl = document.getElementById("addContactModal");
-  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-  modal.show();
-
+  document.getElementById("addContactModal").classList.remove("d-none");
+  document.body.style.overflow = "hidden";
   clearContact();
   saveBtn.classList.remove("d-none");
   updateBtn.classList.add("d-none");
 }
 function closeModal() {
-  var modalEl = document.getElementById("addContactModal");
-  var modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
+  document.getElementById("addContactModal").classList.add("d-none");
+  document.body.style.overflow = "auto";
 }
 
 //Varification Functions
@@ -370,7 +384,6 @@ function varificationName() {
     return false;
   }
 }
-
 function varificationPhone() {
   var phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
 
@@ -390,7 +403,6 @@ function varificationPhone() {
     return false;
   }
 }
-
 function varificationEmail() {
   var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -501,4 +513,61 @@ function displayEmergency() {
   }
 
   document.getElementById("emgCard").innerHTML = cartona;
+}
+
+//Dialoge
+var deleteIndex;
+function openDeleteDialog(index) {
+  deleteIndex = index;
+
+  document.getElementById("deleteModalBody").innerHTML = `
+    <i class="fa-solid fa-circle-exclamation text-warning fs-1 mb-3"></i>
+    <h4 class="fw-bold">Delete Contact?</h4>
+    <p class="text-secondary">
+      Are you sure you want to delete
+      <strong>${contacts[index].fName}</strong>?
+    </p>
+
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <button class="btn btn-danger px-4"
+        onclick="confirmDelete()">Yes, delete it!</button>
+
+      <button class="btn btn-outline-secondary px-4"
+        onclick="closeDeleteModal()">Cancel</button>
+    </div>
+  `;
+
+  document.getElementById("deleteModal").classList.remove("d-none");
+}
+function confirmDelete() {
+  contacts.splice(deleteIndex, 1);
+  localStorage.setItem("all", JSON.stringify(contacts));
+  displayContact();
+  updateCounters();
+
+  document.getElementById("deleteModalBody").innerHTML = `
+    <i class="fa-solid fa-circle-check text-success fs-1 mb-3"></i>
+    <h5 class="fw-bold">Deleted Successfully</h5>
+    <p class="text-secondary">Contact has been removed</p>
+  `;
+
+  setTimeout(closeDeleteModal, 1200);
+}
+function closeDeleteModal() {
+  document.getElementById("deleteModal").classList.add("d-none");
+  document.body.style.overflow = "auto";
+}
+function showSuccessDialog(title, message) {
+  document.getElementById("deleteModalBody").innerHTML = `
+    <i class="fa-solid fa-circle-check text-success fs-1 mb-3"></i>
+    <h5 class="fw-bold">${title}</h5>
+    <p class="text-secondary">${message}</p>
+  `;
+
+  document.getElementById("deleteModal").classList.remove("d-none");
+  document.body.style.overflow = "hidden";
+
+  setTimeout(() => {
+    closeDeleteModal();
+  }, 1200);
 }

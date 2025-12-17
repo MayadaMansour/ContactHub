@@ -27,8 +27,6 @@
         <div class="ms-auto d-flex align-items-center gap-4">
           <button
             class="btn btn-customer px-4 rounded-3 text-light fs-6"
-            data-bs-toggle="modal"
-            data-bs-target="#addContactModal"
             id="openForm"
           >
             + Add Contact
@@ -155,12 +153,10 @@
     </main>
     <!-- !ADD CONTACT MODAL -->
     <div
-      class="modal fade"
       id="addContactModal"
-      tabindex="-1"
-      aria-hidden="true"
+      class="model d-none position-fixed z-3 top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center"
     >
-      <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-dialog modal-dialog-centered modal-lg w-100 px-3">
         <div class="modal-content rounded-4 border-0">
           <!-- HEADER -->
           <div class="modal-header border-0 px-4 pt-4">
@@ -172,8 +168,9 @@
               aria-label="Close"
             ></button>
           </div>
-          <!-- Form -->
-          <div class="modal-body px-4 pb-4">
+
+          <!-- !Form -->
+          <div class="modal-body px-4 pb-4" id="formModel">
             <div class="text-center mb-4">
               <div
                 id="avatarPreview"
@@ -302,14 +299,14 @@
             </button>
             <button
               type="button"
-              class="btn btn-primary px-5 py-2 rounded-4 d-block"
+              class="btn btn-primary px-5 py-2 rounded-4 d-block mx-4"
               id="saveBtn"
             >
               <i class="fa-solid fa-check me-2"></i> Save Contact
             </button>
             <button
               type="button"
-              class="btn btn-warning px-5 py-2 rounded-4 d-none text-light"
+              class="btn btn-warning px-5 py-2 rounded-4 d-none text-light mx-4"
               id="updateBtnForm"
             >
               <i class="fa-solid fa-edit me-2 text-light"></i> Update Contact
@@ -318,6 +315,16 @@
         </div>
       </div>
     </div>
+    <!-- !Dialog -->
+    <div
+      id="deleteModal"
+      class="position-fixed top-0 start-0 w-100 h-100 z-3 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center d-none"
+    >
+      <div class="bg-white rounded-4 p-4 text-center w-50">
+        <div id="deleteModalBody"></div>
+      </div>
+    </div>
+
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>
   </body>
