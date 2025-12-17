@@ -35,6 +35,11 @@ saveBtn.addEventListener("click", addContact);
 cancleBtn.addEventListener("click", closeModal);
 updateBtn.addEventListener("click", updateContact);
 openBtn.addEventListener("click", showForm);
+
+fName.addEventListener("input", varificationName);
+phone.addEventListener("input", varificationPhone);
+email.addEventListener("input", varificationEmail);
+
 avatarBtn.addEventListener("click", function () {
   imageInput.click();
 });
@@ -71,32 +76,27 @@ function getAvatar(contact) {
 
 //Contacts
 function addContact() {
-  if (
-    !varificationName() ||
-    !varificationPhone() ||
-    !varificationEmail() ||
-    !varificationAddress()
-  ) {
-    return;
-  }
+  if (varificationName() && varificationPhone() && varificationEmail()) {
+    var contact = {
+      fName: fName.value,
+      phone: phone.value,
+      email: email.value,
+      address: address.value,
+      group: group.value,
+      notes: notes.value,
+      favorite: favorite.checked,
+      emergency: emergency.checked,
+      image: selectedImage,
+    };
 
-  var contact = {
-    fName: fName.value,
-    phone: phone.value,
-    email: email.value,
-    address: address.value,
-    group: group.value,
-    notes: notes.value,
-    favorite: favorite.checked,
-    emergency: emergency.checked,
-    image: selectedImage,
-  };
-  contacts.push(contact);
-  localStorage.setItem("all", JSON.stringify(contacts));
-  displayContact();
-  clearContact();
-  closeModal();
+    contacts.push(contact);
+    localStorage.setItem("all", JSON.stringify(contacts));
+    displayContact();
+    clearContact();
+    closeModal();
+  }
 }
+
 function displayContact() {
   var cartona = "";
   for (var i = 0; i < contacts.length; i++) {
@@ -197,6 +197,9 @@ function clearContact() {
   avatarPreview.innerHTML = `
     <i class="fa-solid fa-user text-white fs-1"></i>
   `;
+  fName.classList.remove("is-valid", "is-invalid");
+  phone.classList.remove("is-valid", "is-invalid");
+  email.classList.remove("is-valid", "is-invalid");
 }
 function deleteContact(index) {
   contacts.splice(index, 1);
@@ -220,35 +223,29 @@ function preUpdateContact(index) {
   updateBtn.classList.remove("d-none");
 }
 function updateContact() {
-  if (
-    !varificationName() ||
-    !varificationPhone() ||
-    !varificationEmail() ||
-    !varificationAddress()
-  ) {
-    return;
+  if (varificationName() && varificationPhone() && varificationEmail()) {
+    var contact = {
+      fName: fName.value,
+      phone: phone.value,
+      email: email.value,
+      address: address.value,
+      group: group.value,
+      notes: notes.value,
+      favorite: favorite.checked,
+      emergency: emergency.checked,
+      image: selectedImage,
+    };
+
+    contacts.splice(currentIndex, 1, contact);
+    localStorage.setItem("all", JSON.stringify(contacts));
+    displayContact();
+    clearContact();
+    updateBtn.classList.add("d-none");
+    saveBtn.classList.remove("d-none");
+    closeModal();
   }
-
-  var contact = {
-    fName: fName.value,
-    phone: phone.value,
-    email: email.value,
-    address: address.value,
-    group: group.value,
-    notes: notes.value,
-    favorite: favorite.checked,
-    emergency: emergency.checked,
-    image: selectedImage,
-  };
-  contacts.splice(currentIndex, 1, contact);
-  localStorage.setItem("all", JSON.stringify(contacts));
-  displayContact();
-  clearContact();
-  updateBtn.classList.add("d-none");
-  saveBtn.classList.remove("d-none");
-
-  closeModal();
 }
+
 function searchContact(term) {
   term = term.trim().toLowerCase();
   if (term === "") {
@@ -360,19 +357,58 @@ function closeModal() {
 //Varification Functions
 function varificationName() {
   var nameRegex = /^[a-zA-Z\s]{3,}$/;
-  return nameRegex.test(fName.value);
+
+  if (nameRegex.test(fName.value)) {
+    fName.classList.remove("is-invalid");
+    fName.classList.add("is-valid");
+    document.getElementById("alertName").classList.replace("d-block", "d-none");
+    return true;
+  } else {
+    fName.classList.remove("is-valid");
+    fName.classList.add("is-invalid");
+    document.getElementById("alertName").classList.replace("d-none", "d-block");
+    return false;
+  }
 }
+
 function varificationPhone() {
   var phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
-  return phoneRegex.test(phone.value);
+
+  if (phoneRegex.test(phone.value)) {
+    phone.classList.remove("is-invalid");
+    phone.classList.add("is-valid");
+    document
+      .getElementById("alertPhone")
+      .classList.replace("d-block", "d-none");
+    return true;
+  } else {
+    phone.classList.remove("is-valid");
+    phone.classList.add("is-invalid");
+    document
+      .getElementById("alertPhone")
+      .classList.replace("d-none", "d-block");
+    return false;
+  }
 }
+
 function varificationEmail() {
   var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email.value);
-}
-function varificationAddress() {
-  var addressRegex = /^.{3,}$/;
-  return addressRegex.test(address.value);
+
+  if (emailRegex.test(email.value)) {
+    email.classList.remove("is-invalid");
+    email.classList.add("is-valid");
+    document
+      .getElementById("alertEmail")
+      .classList.replace("d-block", "d-none");
+    return true;
+  } else {
+    email.classList.remove("is-valid");
+    email.classList.add("is-invalid");
+    document
+      .getElementById("alertEmail")
+      .classList.replace("d-none", "d-block");
+    return false;
+  }
 }
 
 //Counters Functions
